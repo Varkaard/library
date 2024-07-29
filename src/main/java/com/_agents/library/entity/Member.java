@@ -1,8 +1,10 @@
 package com._agents.library.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com._agents.library.exception.RequiredDataMissingException;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
+
+import java.util.List;
 
 @Entity
 @Table(name = "members")
@@ -12,6 +14,10 @@ public class Member {
     private String username;
     private String email;
     private String address;
+
+    @OneToMany
+    @JsonIgnore
+    private List<Loan> loan;
 
     public String getUsername() {
         return username;
@@ -35,5 +41,23 @@ public class Member {
 
     public void setAddress(String address) {
         this.address = address;
+    }
+
+    public List<Loan> getLoan() {
+        return loan;
+    }
+
+    public void setLoan(List<Loan> loan) {
+        this.loan = loan;
+    }
+
+    public void validateRequiredAttributes(){
+        // Check for required data
+        if (this.getEmail()== null){
+            throw new RequiredDataMissingException("email");
+        }
+        if (this.getAddress()== null){
+            throw new RequiredDataMissingException("address");
+        }
     }
 }

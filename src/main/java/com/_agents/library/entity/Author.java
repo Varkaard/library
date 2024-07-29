@@ -1,11 +1,11 @@
 package com._agents.library.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-
 import java.time.LocalDate;
+import java.util.List;
+
+import com._agents.library.exception.RequiredDataMissingException;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
 
 
 @Entity
@@ -14,9 +14,16 @@ public class Author {
 
     @Id
     @GeneratedValue
+    @Column(unique = true, nullable = false)
     private Long id;
     private String name;
     private LocalDate dateOfBirth;
+    @OneToMany(
+            mappedBy = "author"//,
+           // cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}
+    )
+    @JsonIgnore
+    private List<Book> books;
 
     public String getName() {
         return name;
@@ -32,5 +39,31 @@ public class Author {
 
     public void setDateOfBirth(LocalDate dateOfBirth) {
         this.dateOfBirth = dateOfBirth;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public List<Book> getBooks() {
+        return books;
+    }
+
+    public void setBooks(List<Book> books) {
+        this.books = books;
+    }
+
+    public void validateRequiredAttributes(){
+        // Check for required data
+        if (this.getName() == null){
+            throw new RequiredDataMissingException("name");
+        }
+        if (this.getDateOfBirth()== null){
+            throw new RequiredDataMissingException("date of birth");
+        }
     }
 }
