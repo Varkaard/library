@@ -5,6 +5,7 @@ import java.util.List;
 
 import com._agents.library.exception.RequiredDataMissingException;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 
 
@@ -14,7 +15,6 @@ public class Author {
 
     @Id
     @GeneratedValue
-    @Column(unique = true, nullable = false)
     private Long id;
     private String name;
     private LocalDate dateOfBirth;

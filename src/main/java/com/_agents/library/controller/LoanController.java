@@ -9,6 +9,7 @@ import com._agents.library.exception.*;
 import com._agents.library.repository.BookRepository;
 import com._agents.library.repository.MemberRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com._agents.library.entity.Loan;
@@ -138,7 +139,14 @@ public class LoanController {
 
     // Delete Loan
     @DeleteMapping("/loans/{id}")
-    void deleteLoan(@PathVariable Long id) {
-        loanRepository.deleteById(id);
+    public ResponseEntity<String> deleteLoan(@PathVariable Long id) {
+        Optional<Loan> existingLoan = loanRepository.findById(id);
+        // Check if member exists before deleting it
+        if(existingLoan.isPresent()){
+            loanRepository.deleteById(id);
+            return ResponseEntity.ok().build();
+        }
+        // Send 404 if author wasn't found & deleted
+        return ResponseEntity.notFound().build();
     }
 }

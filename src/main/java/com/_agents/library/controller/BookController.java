@@ -1,12 +1,15 @@
 package com._agents.library.controller;
 
 import java.util.List;
+import java.util.Optional;
 
 import com._agents.library.entity.Author;
 import com._agents.library.entity.Book;
+import com._agents.library.entity.Loan;
 import com._agents.library.exception.*;
 import com._agents.library.repository.AuthorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com._agents.library.exception.BookNotFoundException;
@@ -94,7 +97,14 @@ public class BookController {
 
     // Delete Book
     @DeleteMapping("/books/{id}")
-    void deleteBook(@PathVariable Long id) {
-        bookRepository.deleteById(id);
+    public ResponseEntity<String> deleteBook(@PathVariable Long id) {
+        Optional<Book> existingBook = bookRepository.findById(id);
+        // Check if member exists before deleting it
+        if(existingBook.isPresent()){
+            bookRepository.deleteById(id);
+            return ResponseEntity.ok().build();
+        }
+        // Send 404 if author wasn't found & deleted
+        return ResponseEntity.notFound().build();
     }
 }

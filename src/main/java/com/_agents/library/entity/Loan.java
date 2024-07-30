@@ -2,6 +2,7 @@ package com._agents.library.entity;
 
 import com._agents.library.exception.RequiredDataMissingException;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
@@ -15,10 +16,8 @@ public class Loan {
     @GeneratedValue
     private Long id;
     @OneToOne
-    @JsonIgnore
     private Book book;
     @ManyToOne
-    @JsonIgnore
     private Member member;
     private LocalDate lendDate;
     private LocalDate returnDate;
@@ -69,6 +68,12 @@ public class Loan {
         }
         if (this.getLendDate()== null){
             throw new RequiredDataMissingException("lend date");
+        }
+        if (this.getBook() == null){
+            throw new RequiredDataMissingException("book");
+        }
+        if (this.getMember() == null){
+            throw new RequiredDataMissingException("member");
         }
     }
 }

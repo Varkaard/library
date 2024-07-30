@@ -2,6 +2,7 @@ package com._agents.library.entity;
 
 import com._agents.library.exception.RequiredDataMissingException;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -18,7 +19,6 @@ public class Book {
     private BigDecimal price;
     @ManyToOne
     @JoinColumn(name = "author_id")
-    @JsonIgnore
     private Author author;
     @OneToOne
     @JsonIgnore
@@ -77,11 +77,14 @@ public class Book {
         if (this.getTitle() == null){
             throw new RequiredDataMissingException("title");
         }
-        if (this.getGenre()== null){
+        if (this.getGenre() == null){
             throw new RequiredDataMissingException("genre");
         }
-        if (this.getPrice()== null){
+        if (this.getPrice() == null){
             throw new RequiredDataMissingException("price");
+        }
+        if (this.getAuthor() == null){
+            throw new RequiredDataMissingException("author");
         }
     }
 }

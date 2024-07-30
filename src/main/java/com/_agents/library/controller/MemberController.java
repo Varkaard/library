@@ -72,9 +72,7 @@ public class MemberController {
             Member.setEmail(newMember.getEmail());
             Member.setAddress(newMember.getAddress());
             return repository.save(Member);
-        }).orElseGet(() -> {
-            return repository.save(newMember);
-        });
+        }).orElseGet(() -> repository.save(newMember));
     }
 
     // Delete Member
