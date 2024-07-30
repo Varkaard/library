@@ -60,13 +60,11 @@ public class AuthorController {
     // Replace author
     @PutMapping("/authors/{id}")
     Author replaceAuthor(@RequestBody Author newAuthor, @PathVariable Long id) {
-        authorRepository.findById(id).orElseThrow(()-> new AuthorNotFoundException(id));
+        Author existingAuthor = authorRepository.findById(id).orElseThrow(()-> new AuthorNotFoundException(id));
         newAuthor.validateRequiredAttributes();
-        return authorRepository.findById(id).map(author -> {
-            author.setName(newAuthor.getName());
-            author.setDateOfBirth(newAuthor.getDateOfBirth());
-            return authorRepository.save(author);
-        }).orElseGet(() -> authorRepository.save(newAuthor));
+        existingAuthor.setName(newAuthor.getName());
+        existingAuthor.setDateOfBirth(newAuthor.getDateOfBirth());
+        return authorRepository.save(existingAuthor);
     }
 
     // Delete author

@@ -46,8 +46,8 @@ public class BookController {
     Book newBook(@RequestBody Book newBook, @RequestParam(name="author id") Long authorId){
         // Check if given author exists
         Author existingAuthor = authorRepository.findById(authorId).orElseThrow(()-> new AuthorNotFoundException(authorId));
-        newBook.validateRequiredAttributes();
         newBook.setAuthor(existingAuthor);
+        newBook.validateRequiredAttributes();
         return bookRepository.save(newBook);
     }
 
@@ -75,18 +75,16 @@ public class BookController {
     // Replace Book
     @PutMapping("/books/{id}")
     Book replaceBook(@RequestBody Book newBook, @PathVariable Long id, @RequestParam(name="author id") Long authorId){
-        bookRepository.findById(id).orElseThrow(()-> new BookNotFoundException(id));
+        Book existingBook = bookRepository.findById(id).orElseThrow(()-> new BookNotFoundException(id));
         // Get author information from existing book
         Author existingAuthor = authorRepository.findById(authorId).orElseThrow(()-> new AuthorNotFoundException(authorId));
         newBook.setAuthor(existingAuthor);
         newBook.validateRequiredAttributes();
-        return bookRepository.findById(id).map(Book -> {
-            Book.setTitle(newBook.getTitle());
-            Book.setGenre(newBook.getGenre());
-            Book.setPrice(newBook.getPrice());
-            Book.setAuthor(newBook.getAuthor());
-            return bookRepository.save(Book);
-        }).orElseGet(() -> bookRepository.save(newBook));
+        existingBook.setTitle(newBook.getTitle());
+        existingBook.setGenre(newBook.getGenre());
+        existingBook.setPrice(newBook.getPrice());
+        existingBook.setAuthor(newBook.getAuthor());
+        return bookRepository.save(existingBook);
     }
 
     // Delete Book

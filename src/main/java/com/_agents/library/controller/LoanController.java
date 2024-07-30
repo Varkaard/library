@@ -51,13 +51,12 @@ public class LoanController {
         // Check if member exists
         Member existingMember = memberRepository.findByUsername(memberUsername).orElseThrow(()-> new MemberNotFoundException(memberUsername));
         // Check for maximum amount of loans per member
-        List<Loan> loanList = loanRepository.findByMember_Username(memberUsername);
-        if (loanList.size() > 4){
-            throw new MaximumLoansReachedException(loanList.size()+1);
+        if (isMaximumLoansReachedForUser(memberUsername)){
+            throw new MaximumLoansReachedException(5);
         }
-        newLoan.validateRequiredAttributes();
         newLoan.setMember(existingMember);
         newLoan.setBook(existingBook);
+        newLoan.validateRequiredAttributes();
         return loanRepository.save(newLoan);
     }
 
