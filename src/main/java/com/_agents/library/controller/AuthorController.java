@@ -3,7 +3,10 @@ package com._agents.library.controller;
 import java.util.List;
 import java.util.Optional;
 
-import com._agents.library.exception.UniqueIdentifierModificationException;
+import com._agents.library.entity.Book;
+import com._agents.library.exception.RelatedObjectExistsException;
+import com._agents.library.repository.BookRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,72 +17,70 @@ import com._agents.library.repository.AuthorRepository;
 @RestController
 public class AuthorController {
 
-    private AuthorRepository repository;
+    private final AuthorRepository authorRepository;
+    @Autowired
+    private BookRepository bookRepository;
 
     AuthorController(AuthorRepository repository){
-        this.repository = repository;
+        this.authorRepository = repository;
     }
 
     // Get all authors
     @GetMapping("/authors")
     List<Author> all() {
-        return repository.findAll();
+        return authorRepository.findAll();
     }
 
     // Get single author
     @GetMapping("/authors/{id}")
     Author one(@PathVariable Long id) {
-        return repository.findById(id).orElseThrow(()-> new AuthorNotFoundException(id));
+        return authorRepository.findById(id).orElseThrow(()-> new AuthorNotFoundException(id));
     }
 
     // Create author
     @PostMapping("/authors")
     Author newAuthor(@RequestBody Author newAuthor){
         newAuthor.validateRequiredAttributes();
-        return repository.save(newAuthor);
+        return authorRepository.save(newAuthor);
     }
 
     // Update author
     @PatchMapping("/authors/{id}")
     Author patchAuthor(@RequestBody Author newAuthor, @PathVariable Long id) {
-        // Check if id from request body is different from the id in the path variable
-        if (newAuthor.getId() != null && !newAuthor.getId().equals(id)){
-            throw new UniqueIdentifierModificationException(newAuthor.getId());
-        }
-        Author existingAuthor = repository.findById(id).orElseThrow(()-> new AuthorNotFoundException(id));
+        Author existingAuthor = authorRepository.findById(id).orElseThrow(()-> new AuthorNotFoundException(id));
         if (newAuthor.getName() != null){
             existingAuthor.setName(newAuthor.getName());
         }
         if (newAuthor.getDateOfBirth() != null){
             existingAuthor.setDateOfBirth(newAuthor.getDateOfBirth());
         }
-        return repository.save(existingAuthor);
+        return authorRepository.save(existingAuthor);
     }
 
     // Replace author
     @PutMapping("/authors/{id}")
     Author replaceAuthor(@RequestBody Author newAuthor, @PathVariable Long id) {
-        // Check if id from request body is different from the id in the path variable
-        if (newAuthor.getId() != null && !newAuthor.getId().equals(id)){
-            throw new UniqueIdentifierModificationException(newAuthor.getId());
-        }
+        authorRepository.findById(id).orElseThrow(()-> new AuthorNotFoundException(id));
         newAuthor.validateRequiredAttributes();
-        return repository.findById(id).map(author -> {
+        return authorRepository.findById(id).map(author -> {
             author.setName(newAuthor.getName());
             author.setDateOfBirth(newAuthor.getDateOfBirth());
-            return repository.save(author);
-        }).orElseGet(() -> {
-            return repository.save(newAuthor);
-        });
+            return authorRepository.save(author);
+        }).orElseGet(() -> authorRepository.save(newAuthor));
     }
 
     // Delete author
     @DeleteMapping("/authors/{id}")
     public ResponseEntity<String> deleteAuthor(@PathVariable Long id) {
-        Optional<Author> existingAuthor = repository.findById(id);
+        Optional<Author> existingAuthor = authorRepository.findById(id);
         // Check if author exists before deleting it
         if(existingAuthor.isPresent()){
-            repository.deleteById(id);
+            // Check if there is an existing book before deleting
+            Optional<Book> existingBookForAuthor = bookRepository.findByAuthor_Id(id);
+            if (existingBookForAuthor.isPresent()){
+                throw new RelatedObjectExistsException("book", existingBookForAuthor.get().getId());
+            }
+            authorRepository.deleteById(id);
             return ResponseEntity.ok().build();
         }
         // Send 404 if author wasn't found & deleted

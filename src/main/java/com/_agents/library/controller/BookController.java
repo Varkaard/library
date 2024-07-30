@@ -8,6 +8,7 @@ import com._agents.library.entity.Book;
 import com._agents.library.entity.Loan;
 import com._agents.library.exception.*;
 import com._agents.library.repository.AuthorRepository;
+import com._agents.library.repository.LoanRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +22,8 @@ public class BookController {
     private final BookRepository bookRepository;
     @Autowired
     private AuthorRepository authorRepository;
+    @Autowired
+    private LoanRepository loanRepository;
 
     BookController(BookRepository bookRepository){
         this.bookRepository = bookRepository;
@@ -51,10 +54,6 @@ public class BookController {
     // Update book
     @PatchMapping("/book/{id}")
     Book patchBook(@RequestBody Book newBook, @PathVariable Long id, @RequestParam(name="author id", required=false) Long authorId) {
-        // Check if id from request body is different from the id in the path variable
-        if (newBook.getId() != null && !newBook.getId().equals(id)){
-            throw new UniqueIdentifierModificationException(newBook.getId());
-        }
         Book existingBook = bookRepository.findById(id).orElseThrow(()-> new BookNotFoundException(id));
         if (authorId != null){
             // Check if given author exists
@@ -75,11 +74,8 @@ public class BookController {
 
     // Replace Book
     @PutMapping("/books/{id}")
-    Book replaceBook(@RequestBody Book newBook, @PathVariable Long id, @RequestParam(name="author id", required=true) Long authorId){
-        // Check if id from request body is different from the id in the path variable
-        if (newBook.getId() != null && !newBook.getId().equals(id)){
-            throw new UniqueIdentifierModificationException(newBook.getId());
-        }
+    Book replaceBook(@RequestBody Book newBook, @PathVariable Long id, @RequestParam(name="author id") Long authorId){
+        bookRepository.findById(id).orElseThrow(()-> new BookNotFoundException(id));
         // Get author information from existing book
         Author existingAuthor = authorRepository.findById(authorId).orElseThrow(()-> new AuthorNotFoundException(authorId));
         newBook.setAuthor(existingAuthor);
@@ -90,9 +86,7 @@ public class BookController {
             Book.setPrice(newBook.getPrice());
             Book.setAuthor(newBook.getAuthor());
             return bookRepository.save(Book);
-        }).orElseGet(() -> {
-            return bookRepository.save(newBook);
-        });
+        }).orElseGet(() -> bookRepository.save(newBook));
     }
 
     // Delete Book
@@ -101,6 +95,11 @@ public class BookController {
         Optional<Book> existingBook = bookRepository.findById(id);
         // Check if member exists before deleting it
         if(existingBook.isPresent()){
+            // Check if there is an existing loan before deleting
+            Optional<Loan> existingLoanForBook = loanRepository.findByBook_Id(id);
+            if (existingLoanForBook.isPresent()){
+                throw new RelatedObjectExistsException("loan", existingLoanForBook.get().getId());
+            }
             bookRepository.deleteById(id);
             return ResponseEntity.ok().build();
         }

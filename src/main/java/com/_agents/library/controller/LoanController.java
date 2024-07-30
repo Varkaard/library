@@ -42,7 +42,7 @@ public class LoanController {
 
     // Create Loan
     @PostMapping("/loans")
-    Loan newLoan(@RequestBody Loan newLoan, @RequestParam(name="member username", required=true) String memberUsername, @RequestParam(name="book id", required = true) Long bookId){
+    Loan newLoan(@RequestBody Loan newLoan, @RequestParam(name="member username") String memberUsername, @RequestParam(name="book id") Long bookId){
         // Check if book exists and is already loaned
         Book existingBook = bookRepository.findById(bookId).orElseThrow(()-> new BookNotFoundException(bookId));
         if (loanRepository.findByBook_Id(existingBook.getId()).isPresent()){
@@ -64,10 +64,6 @@ public class LoanController {
     // Update loan
     @PatchMapping("/loan/{id}")
     Loan patchLoan(@RequestBody Loan newLoan, @PathVariable Long id, @RequestParam(name="member username", required=false) String memberUsername, @RequestParam(name="book id", required = false) Long bookId) {
-        // Check if id from request body is different from the id in the path variable
-        if (newLoan.getId() != null && !newLoan.getId().equals(id)){
-            throw new UniqueIdentifierModificationException(newLoan.getId());
-        }
         Loan existingLoan = loanRepository.findById(id).orElseThrow(()-> new LoanNotFoundException(id));
         // Check if given member exists
         if (memberUsername != null){
@@ -99,11 +95,8 @@ public class LoanController {
 
     // Replace Loan
     @PutMapping("/loans/{id}")
-    Loan replaceLoan(@RequestBody Loan newLoan, @PathVariable Long id, @RequestParam(name="member username", required=true) String memberUsername, @RequestParam(name="book id", required = true) Long bookId){
-        // Check if id from request body is different from the id in the path variable
-        if (newLoan.getId() != null && !newLoan.getId().equals(id)){
-            throw new UniqueIdentifierModificationException(newLoan.getId());
-        }
+    Loan replaceLoan(@RequestBody Loan newLoan, @PathVariable Long id, @RequestParam(name="member username") String memberUsername, @RequestParam(name="book id") Long bookId){
+        loanRepository.findById(id).orElseThrow(()-> new LoanNotFoundException(id));
         newLoan.validateRequiredAttributes();
 
         // Check if given member exists

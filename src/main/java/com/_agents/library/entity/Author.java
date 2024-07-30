@@ -1,11 +1,9 @@
 package com._agents.library.entity;
 
 import java.time.LocalDate;
-import java.util.List;
 
 import com._agents.library.exception.RequiredDataMissingException;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.swagger.v3.oas.annotations.media.Schema;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 
 
@@ -15,15 +13,10 @@ public class Author {
 
     @Id
     @GeneratedValue
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Long id;
     private String name;
     private LocalDate dateOfBirth;
-    @OneToMany(
-            mappedBy = "author"//,
-           // cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}
-    )
-    @JsonIgnore
-    private List<Book> books;
 
     public String getName() {
         return name;
@@ -47,14 +40,6 @@ public class Author {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public List<Book> getBooks() {
-        return books;
-    }
-
-    public void setBooks(List<Book> books) {
-        this.books = books;
     }
 
     public void validateRequiredAttributes(){

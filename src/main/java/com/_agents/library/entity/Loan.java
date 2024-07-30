@@ -1,8 +1,7 @@
 package com._agents.library.entity;
 
 import com._agents.library.exception.RequiredDataMissingException;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.swagger.v3.oas.annotations.media.Schema;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
@@ -14,6 +13,7 @@ public class Loan {
 
     @Id
     @GeneratedValue
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Long id;
     @OneToOne
     private Book book;

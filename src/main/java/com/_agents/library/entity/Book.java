@@ -1,8 +1,7 @@
 package com._agents.library.entity;
 
 import com._agents.library.exception.RequiredDataMissingException;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.swagger.v3.oas.annotations.media.Schema;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -13,6 +12,7 @@ public class Book {
 
     @Id
     @GeneratedValue
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Long id;
     private String title;
     private String genre;
@@ -20,9 +20,6 @@ public class Book {
     @ManyToOne
     @JoinColumn(name = "author_id")
     private Author author;
-    @OneToOne
-    @JsonIgnore
-    private Loan loan;
 
     public String getTitle() {
         return title;
@@ -62,14 +59,6 @@ public class Book {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public Loan getLoan() {
-        return loan;
-    }
-
-    public void setLoan(Loan loan) {
-        this.loan = loan;
     }
 
     public void validateRequiredAttributes(){
