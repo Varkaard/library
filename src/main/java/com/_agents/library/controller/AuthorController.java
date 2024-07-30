@@ -76,9 +76,9 @@ public class AuthorController {
         // Check if author exists before deleting it
         if(existingAuthor.isPresent()){
             // Check if there is an existing book before deleting
-            Optional<Book> existingBookForAuthor = bookRepository.findByAuthor_Id(id);
-            if (existingBookForAuthor.isPresent()){
-                throw new RelatedObjectExistsException("book", existingBookForAuthor.get().getId());
+            List<Book> existingBooksForAuthor = bookRepository.findByAuthor_Id(id);
+            if (!existingBooksForAuthor.isEmpty()){
+                throw new RelatedObjectExistsException("book", existingBooksForAuthor.get(0).getId());
             }
             authorRepository.deleteById(id);
             return ResponseEntity.ok().build();

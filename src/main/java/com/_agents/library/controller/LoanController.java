@@ -69,6 +69,10 @@ public class LoanController {
         if (memberUsername != null){
             Optional<Member> existingMember = memberRepository.findByUsername(memberUsername);
             if (existingMember.isPresent()){
+                //Check for number of loans
+                if (!existingMember.get().getUsername().equals(memberUsername) && isMaximumLoansReachedForUser(memberUsername) ){
+                    throw new MaximumLoansReachedException(5);
+                }
                 existingLoan.setMember(existingMember.get());
             }else {
                 throw new MemberNotFoundException(memberUsername);
@@ -78,6 +82,11 @@ public class LoanController {
         if (bookId != null){
             Optional<Book> existingBook = bookRepository.findById(bookId);
             if (existingBook.isPresent()){
+                // Check if new book is already loaned
+                Optional<Loan> possibleDuplicateLoan = loanRepository.findByBook_Id(bookId);
+                if (possibleDuplicateLoan.isPresent()){
+                    throw new LoanAlreadyExistsException(possibleDuplicateLoan.get().getId());
+                }
                 existingLoan.setBook(existingBook.get());
             }else {
                 throw new BookNotFoundException(bookId);
@@ -96,12 +105,16 @@ public class LoanController {
     // Replace Loan
     @PutMapping("/loans/{id}")
     Loan replaceLoan(@RequestBody Loan newLoan, @PathVariable Long id, @RequestParam(name="member username") String memberUsername, @RequestParam(name="book id") Long bookId){
-        loanRepository.findById(id).orElseThrow(()-> new LoanNotFoundException(id));
+        Loan existingLoan = loanRepository.findById(id).orElseThrow(()-> new LoanNotFoundException(id));
         newLoan.validateRequiredAttributes();
 
         // Check if given member exists
         Optional<Member> existingMember = memberRepository.findByUsername(memberUsername);
         if (existingMember.isPresent()){
+            //Check for number of loans
+            if (!existingMember.get().getUsername().equals(memberUsername) && isMaximumLoansReachedForUser(memberUsername) ){
+                throw new MaximumLoansReachedException(5);
+            }
             newLoan.setMember(existingMember.get());
         }else {
             throw new MemberNotFoundException(memberUsername);
@@ -109,25 +122,20 @@ public class LoanController {
         // Check if given book exists
         Optional<Book> existingBook = bookRepository.findById(bookId);
         if (existingBook.isPresent()){
+            // Check if new book is already loaned
+            Optional<Loan> possibleDuplicateLoan = loanRepository.findByBook_Id(bookId);
+            if (possibleDuplicateLoan.isPresent()){
+                throw new LoanAlreadyExistsException(possibleDuplicateLoan.get().getId());
+            }
             newLoan.setBook(existingBook.get());
         }else {
             throw new BookNotFoundException(bookId);
         }
-
-        return loanRepository.findById(id).map(Loan -> {
-            Loan.setBook(newLoan.getBook());
-            Loan.setMember(newLoan.getMember());
-            Loan.setLendDate(newLoan.getLendDate());
-            Loan.setReturnDate(newLoan.getReturnDate());
-            return loanRepository.save(Loan);
-        }).orElseGet(() -> {
-            // Check for maximum amount of loans per member
-            List<Loan> loanList = loanRepository.findByMember_Username(memberUsername);
-            if (loanList.size() > 4){
-                throw new MaximumLoansReachedException(loanList.size()+1);
-            }
-            return loanRepository.save(newLoan);
-        });
+        existingLoan.setBook(newLoan.getBook());
+        existingLoan.setMember(newLoan.getMember());
+        existingLoan.setLendDate(newLoan.getLendDate());
+        existingLoan.setReturnDate(newLoan.getReturnDate());
+        return loanRepository.save(existingLoan);
     }
 
     // Delete Loan
@@ -141,5 +149,10 @@ public class LoanController {
         }
         // Send 404 if author wasn't found & deleted
         return ResponseEntity.notFound().build();
+    }
+
+    private boolean isMaximumLoansReachedForUser(String memberUsername){
+        List<Loan> loanList = loanRepository.findByMember_Username(memberUsername);
+        return loanList.size() > 4;
     }
 }

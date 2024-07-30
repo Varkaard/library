@@ -55,7 +55,7 @@ public class MemberController {
     @PatchMapping("/members/{username}")
     Member patchMember(@RequestBody Member newMember,@PathVariable String username) {
         // Check if username from request body is different from the username in the path variable
-        if (!newMember.getUsername().isEmpty() && !newMember.getUsername().equals(username)){
+        if (newMember.getUsername() != null && !newMember.getUsername().equals(username)){
             throw new UniqueIdentifierModificationException(newMember.getUsername());
         }
         Member existingMember = memberRepository.findByUsername(username).orElseThrow(()-> new MemberNotFoundException(username));
@@ -90,9 +90,9 @@ public class MemberController {
         // Check if member exists before deleting it
         if(existingMember.isPresent()){
             // Check if there is an existing loan before deleting
-            List<Loan> existingLoanForMember = loanRepository.findByMember_Username(username);
-            if (!existingLoanForMember.isEmpty()){
-                throw new RelatedObjectExistsException("loan", existingLoanForMember.get(0).getId());
+            List<Loan> existingLoansForMember = loanRepository.findByMember_Username(username);
+            if (!existingLoansForMember.isEmpty()){
+                throw new RelatedObjectExistsException("loan", existingLoansForMember.get(0).getId());
             }
             memberRepository.deleteByUsername(username);
             return ResponseEntity.ok().build();
