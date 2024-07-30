@@ -1,6 +1,7 @@
 package com._agents.library.controller;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import com._agents.library.entity.Book;
@@ -121,10 +122,13 @@ public class LoanController {
         // Check if given book exists
         Optional<Book> existingBook = bookRepository.findById(bookId);
         if (existingBook.isPresent()){
-            // Check if new book is already loaned
-            Optional<Loan> possibleDuplicateLoan = loanRepository.findByBook_Id(bookId);
-            if (possibleDuplicateLoan.isPresent()){
-                throw new LoanAlreadyExistsException(possibleDuplicateLoan.get().getId());
+            // Check if book will be modified
+           if (!Objects.equals(bookId, existingLoan.getBook().getId())){
+                // Check if new book is already loaned
+                Optional<Loan> possibleDuplicateLoan = loanRepository.findByBook_Id(bookId);
+                if (possibleDuplicateLoan.isPresent()) {
+                    throw new LoanAlreadyExistsException(possibleDuplicateLoan.get().getId());
+                }
             }
             newLoan.setBook(existingBook.get());
         }else {
