@@ -10,7 +10,6 @@ import com._agents.library.exception.UniqueIdentifierModificationException;
 import com._agents.library.repository.LoanRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.beans.factory.annotation.Autowired;
 
 
 import com._agents.library.entity.Member;
@@ -22,11 +21,11 @@ import com._agents.library.repository.MemberRepository;
 public class MemberController {
 
     private final MemberRepository memberRepository;
-    @Autowired
-    private LoanRepository loanRepository;
+    private final LoanRepository loanRepository;
 
-    MemberController(MemberRepository memberRepository){
+    MemberController(MemberRepository memberRepository, LoanRepository loanRepository){
         this.memberRepository = memberRepository;
+        this.loanRepository = loanRepository;
     }
 
     // Get all members

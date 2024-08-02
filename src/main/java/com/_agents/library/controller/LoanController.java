@@ -9,7 +9,6 @@ import com._agents.library.entity.Member;
 import com._agents.library.exception.*;
 import com._agents.library.repository.BookRepository;
 import com._agents.library.repository.MemberRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,13 +19,13 @@ import com._agents.library.repository.LoanRepository;
 public class LoanController {
 
     private final LoanRepository loanRepository;
-    @Autowired
-    private BookRepository bookRepository;
-    @Autowired
-    private MemberRepository memberRepository;
+    private final BookRepository bookRepository;
+    private final MemberRepository memberRepository;
 
-    LoanController(LoanRepository loanRepository){
+    LoanController(LoanRepository loanRepository, BookRepository bookRepository, MemberRepository memberRepository){
         this.loanRepository = loanRepository;
+        this.bookRepository = bookRepository;
+        this.memberRepository = memberRepository;
     }
 
     // Get all loans

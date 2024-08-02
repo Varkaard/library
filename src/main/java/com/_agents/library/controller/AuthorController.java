@@ -6,7 +6,6 @@ import java.util.Optional;
 import com._agents.library.entity.Book;
 import com._agents.library.exception.RelatedObjectExistsException;
 import com._agents.library.repository.BookRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,11 +17,11 @@ import com._agents.library.repository.AuthorRepository;
 public class AuthorController {
 
     private final AuthorRepository authorRepository;
-    @Autowired
-    private BookRepository bookRepository;
+    private final BookRepository bookRepository;
 
-    AuthorController(AuthorRepository repository){
-        this.authorRepository = repository;
+    AuthorController(AuthorRepository authorRepository, BookRepository bookRepository){
+        this.authorRepository = authorRepository;
+        this.bookRepository = bookRepository;
     }
 
     // Get all authors
